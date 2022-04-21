@@ -87,6 +87,7 @@ def sign_in():
                        data=user_json)
 
 
+# FULL-WORKING GET-USER METHOD
 @app.route('/user/<int:id>', methods=['GET'])
 def get_user(id):
     user = User.query.filter_by(id=id).first()
@@ -119,6 +120,22 @@ def create_note():
     except:
         return return_json(success=False,
                            error='Database error')
+
+
+# EDIT NOTE WORKING METHOD
+@app.route('/edit-note/<int:note_id>', methods=['POST'])
+def edit_note(note_id):
+    if request.form.get("text", None) is None:
+        return return_json(success=False,
+                           error="Text is empty")
+
+    new_text = str(request.form.get("text", None))
+    note = Note.query.filter_by(id=note_id).first()
+    note.text = new_text
+
+    db.session.add(note)
+    db.session.commit()
+    return return_json(success=True)
 
 
 @app.route('/remove-note', methods=['POST'])
