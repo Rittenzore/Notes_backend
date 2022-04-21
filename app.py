@@ -29,6 +29,8 @@ class Note(db.Model):
     user_id = db.Column(db.Integer, index=True)
     text = db.Column(db.String)
     date = db.Column(db.DateTime, default=datetime.utcnow)
+    longitude = db.Column(db.String)
+    latitude = db.Column(db.String)
 
     def __repr__(self):
         return '<Note %r>' % self.id
@@ -111,11 +113,16 @@ def create_note():
 
     text = str(request.form.get("text", None))
     user_id = int(request.form.get("user_id", None))
+    longitude = str(request.form.get("longitude", None))
+    latitude = str(request.form.get("latitude", None))
     note = Note(user_id=int(user_id),
-                text=text)
+                text=text,
+                longitude=longitude,
+                latitude=latitude)
     try:
         db.session.add(note)
         db.session.commit()
+        print(note)
         return return_json(success=True)
     except:
         return return_json(success=False,
@@ -130,8 +137,12 @@ def edit_note(note_id):
                            error="Text is empty")
 
     new_text = str(request.form.get("text", None))
+    longitude = str(request.form.get("longitude", None))
+    latitude = str(request.form.get("latitude", None))
     note = Note.query.filter_by(id=note_id).first()
     note.text = new_text
+    note.longitude = longitude
+    note.latitude = latitude
 
     db.session.add(note)
     db.session.commit()
@@ -151,6 +162,7 @@ def remove_note():
         return return_json(success=False,
                            error='There was a problem deleting note.')
 
+
 # GET NOTES WORKING METHOD
 @app.route('/notes/<int:user_id>')
 def get_notes(user_id):
@@ -160,12 +172,16 @@ def get_notes(user_id):
         note_model = Note(id=note.id,
                           user_id=user_id,
                           text=note.text,
-                          date=note.date)
+                          date=note.date,
+                          longitude=note.longitude,
+                          latitude=note.latitude)
         note_json = {
             "id": note_model.id,
             "user_id": note_model.user_id,
             "text": note_model.text,
-            "date": note_model.date
+            "date": note_model.date,
+            "longitude": note_model.longitude,
+            "latitude": note_model.latitude
         }
         notes_json.append(note_json)
     return return_json(success=True,
@@ -180,7 +196,9 @@ def get_note(id, user_id):
         "id": note.id,
         "user_id": note.user_id,
         "text": note.text,
-        "date": note.date
+        "date": note.date,
+        "longitude": note.longitude,
+        "latitude": note.latitude
     }
     print(note_json)
 
